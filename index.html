@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVO_Block_Free — คู่มือคำสั่ง</title>
+<style>
+  :root{
+    --bg:#0f141d; --bg2:#1b2330; --card:#161f2b; --line:#2b3a4a;
+    --txt:#e6edf6; --dim:#8fa3bd; --gold:#ffd24d; --dia:#5fd6cc; --emr:#5fd17a;
+    --red:#ff6b6b; --help:#7fe39a; --prank:#ff9a7a; --set:#9fc7ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#1b2330,#0f141d);color:var(--txt);
+    font-family:'Segoe UI','Leelawadee UI',Tahoma,sans-serif;padding:0 0 60px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header{padding:34px 20px 14px}
+  h1{margin:0;font-size:30px;font-weight:800}
+  h1 .acc{color:var(--gold)}
+  .sub{color:var(--dim);font-size:15px;margin-top:6px}
+  /* search */
+  .searchbox{position:relative;margin:22px 0 8px}
+  #q{width:100%;padding:15px 46px;border-radius:12px;border:1.5px solid var(--line);
+    background:#0c121b;color:var(--txt);font-size:17px;outline:none}
+  #q:focus{border-color:var(--gold)}
+  .searchbox .ico{position:absolute;left:16px;top:14px;font-size:20px;color:var(--dim)}
+  .searchbox .clr{position:absolute;right:14px;top:12px;color:var(--dim);cursor:pointer;
+    font-size:20px;display:none}
+  /* autocomplete */
+  #ac{position:absolute;left:0;right:0;top:56px;background:#0c121b;border:1.5px solid var(--line);
+    border-radius:10px;z-index:20;overflow:hidden;display:none}
+  #ac div{padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+  #ac div:hover,#ac div.sel{background:#1d2735}
+  #ac .k{color:var(--txt)} #ac .t{color:var(--dim);font-size:13px}
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 22px}
+  .chip{padding:6px 13px;border-radius:20px;border:1px solid var(--line);background:#13202c;
+    color:var(--dim);cursor:pointer;font-size:13px;user-select:none}
+  .chip.on{background:var(--gold);color:#1a1300;border-color:var(--gold);font-weight:600}
+  /* cards */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+    border-left:4px solid var(--line)}
+  .card.prank{border-left-color:var(--prank)} .card.help{border-left-color:var(--help)}
+  .card.set{border-left-color:var(--set)} .card.dev{border-left-color:var(--dim)}
+  .card .cmd{font-family:Consolas,monospace;font-size:16px;font-weight:700;color:#fff}
+  .card .cat{float:right;font-size:11px;padding:2px 9px;border-radius:10px;background:#0c121b;color:var(--dim)}
+  .card .desc{color:var(--dim);font-size:14px;margin:9px 0 8px;line-height:1.55}
+  .card .ex{font-family:Consolas,monospace;font-size:12.5px;color:var(--dia);background:#0c121b;
+    padding:6px 10px;border-radius:7px;display:inline-block}
+  .card .tags{margin-top:9px}
+  .card .tg{display:inline-block;font-size:11px;color:var(--dim);background:#0c121b;
+    border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin:2px 4px 0 0}
+  .secttl{font-size:13px;letter-spacing:1px;color:var(--dim);text-transform:uppercase;
+    margin:26px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .empty{color:var(--dim);padding:30px;text-align:center;display:none}
+  mark{background:var(--gold);color:#1a1300;border-radius:3px;padding:0 2px}
+  footer{color:#5d6b7d;font-size:12px;margin-top:30px;text-align:center}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>AVO<span class="acc">_Block_Free</span> — คู่มือคำสั่ง</h1>
+  <div class="sub">ต่อบล็อคฟรี · คำสั่ง <code>/avob</code> · พิมพ์ค้นหา หรือกดหมวด · มี autocomplete แนะนำคำ</div>
+</header>
+
+<div class="wrap">
+  <div class="searchbox">
+    <span class="ico">🔎</span>
+    <input id="q" autocomplete="off" placeholder="ค้นหา: tnt, ฝน, ดาบ, shield, ทุบ, ขนาด, win ..." />
+    <span class="clr" id="clr">✕</span>
+    <div id="ac"></div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="list"></div>
+  <div class="empty" id="empty">ไม่พบคำสั่งที่ตรงกับ "<span id="eq"></span>"</div>
+  <footer>AVO_Block_Free · /avob &lt;...&gt; · อัปเดตอัตโนมัติจากปลั๊กอิน</footer>
+</div>
+
+<script>
+const CMDS = [
+  // pranks
+  {cmd:"/avob spawn tnt [n=1]", cat:"prank", desc:"TNT เกิดตรงตัวผู้เล่น ตกเร็ว แล้วระเบิด (~0.4s) — พังเฉพาะบล็อคที่ต่อ ไม่โดนกำแพง, ไม่มีของหล่น", ex:"/avob spawn tnt 5", tags:["tnt","ระเบิด","bomb","แกล้ง"]},
+  {cmd:"/avob spawn rintnt [n=20]", cat:"prank", desc:"ฝน TNT — ล็อคกล้องผู้เล่น (สิง armorstand) มองขึ้นดูฝนตก. n>20 ตกถี่ขึ้น", ex:"/avob spawn rintnt 30", tags:["rintnt","ฝน","rain","tnt","lock","กล้อง","แกล้ง"]},
+  {cmd:"/avob spawn atomic", cat:"prank", desc:"บอส — ดาบหมุนตกจากฟ้ากลางเขต ระเบิดเคลียร์ fill เร็วเป็นลำดับ + กล้อง cinematic. ลูกเดียว ไม่ใส่เลข", ex:"/avob spawn atomic", tags:["atomic","boss","บอส","sword","ดาบ","แกล้ง"]},
+  {cmd:"/avob spawn tntfly [n=50]", cat:"prank", desc:"TNT จริงเกิดที่เท้ารัวๆ (~0.15s/ลูก) → ระเบิดพังบล็อค fill รอบจุด + ดันผู้เล่นขึ้นค่อยๆ (สะสม). actionbar โชว์ความสูง", ex:"/avob spawn tntfly 80", tags:["tntfly","fly","ผลัก","push","บิน","แกล้ง","สูง"]},
+  // helps
+  {cmd:"/avob spawn add [n=1]", cat:"help", desc:"เพิ่มบล็อค — BlockDisplay เรืองแสงเกิดสูงที่ขอบเขต แล้วโค้ง (arc) ลงมาเล็งช่องว่าง. กันเกินเมื่อเต็ม. ยิ่งจำนวนเยอะยิ่งเกิดเร็ว (ramp)", ex:"/avob spawn add 50", tags:["add","ช่วย","help","เพิ่ม","บล็อค","arc"]},
+  {cmd:"/avob spawn addrow [n=1]", cat:"help", desc:"ลงทีละแถว — 1 แถว = 1 x-line × full-z × 3 ชั้น. BlockDisplay โค้ง (arc) ลงมาเหมือน add. n = จำนวนแถว ไล่ band ล่าง→บน. หยุดเมื่อเต็ม", ex:"/avob spawn addrow 3", tags:["addrow","แถว","row","ช่วย","help","เพิ่ม","บล็อค","arc"]},
+  {cmd:"/avob spawn shield [sec=5]", cat:"help", desc:"ปุ่มกันตาย — เคลียร์ threat ทั้งหมด + หยุดคิว gift + Resistance/invulnerable + โดมเรืองแสง", ex:"/avob spawn shield 8", tags:["shield","กัน","defend","โดม","ช่วย","ป้องกัน"]},
+  {cmd:"/avob spawn layer [n=1]", cat:"help", desc:"เติมชั้นล่างสุดที่ยังไม่เต็ม ทั้งชั้นแบบ wave (กลางออกนอก) + เสียง. ไล่ตามหลังโดนแกล้ง", ex:"/avob spawn layer 2", tags:["layer","ชั้น","fill","ช่วย","เติม"]},
+  // setup / config
+  {cmd:"/avob setup", cat:"set", desc:"สร้างกำแพงกระจก + พื้น ที่ขนาดปัจจุบัน", ex:"/avob setup", tags:["setup","เซ็ต","สร้าง","กำแพง","wall"]},
+  {cmd:"/avob reset", cat:"set", desc:"เคลียร์บล็อคที่ต่อ (fill) เริ่มใหม่ — กำแพงคงอยู่. มีเอฟเฟคละลายนอก→ใน + implosion", ex:"/avob reset", tags:["reset","รีเซ็ต","เคลียร์","clear"]},
+  {cmd:"/avob size [9|12|18|26]", cat:"set", desc:"ปรับขนาด footprint (สูง 9 ชั้นเท่าเดิม). ไม่ต้อง reset; ใหญ่→เล็ก ลบส่วนเกิน คืนพื้นเป็นดิน. พิมพ์เฉยๆ = ดูขนาดปัจจุบัน", ex:"/avob size", tags:["size","ขนาด","9","12","18","26"]},
+  {cmd:"/avob time <วิ>", cat:"set", desc:"ตั้งเวลานับถอยหลัง (default 15). 3 วิท้ายนับช้าลง", ex:"/avob time 20", tags:["time","เวลา","นับ","countdown"]},
+  {cmd:"/avob blockbreak <on|off>", cat:"set", desc:"เปิด/ปิด ให้ผู้เล่นทุบบล็อค fill (กำแพงทุบไม่ได้เสมอ). จำค่าใน config. default on", ex:"/avob blockbreak off", tags:["blockbreak","ทุบ","break","กำแพง"]},
+  {cmd:"/avob fastplace <on|off>", cat:"set", desc:"เปิด/ปิด วางเร็ว — คลิกขวาในเขตเติมคอลัมน์ทีละ 3 (หยุดที่ตัวผู้เล่น). จำค่าใน config. default on", ex:"/avob fastplace off", tags:["fastplace","วางเร็ว","place","คลิกขวา","column"]},
+  {cmd:"/avob play <1|2|3>", cat:"set", desc:"เลือกโหมดเล่น — ตอนนี้ทำแค่ 1 (2/3 ทีหลัง)", ex:"/avob play 1", tags:["play","โหมด","mode"]},
+  // dev
+  {cmd:"/avob test", cat:"dev", desc:"self-test ให้ AI/RCON ตรวจ — build→fill→countdown→ทุก prank/help→Atomic, ลง log", ex:"/avob test", tags:["test","เทส","dev","rcon"]},
+  {cmd:"/a", cat:"dev", desc:"reload ปลั๊กอินเงียบๆ (plugman reload รันเป็น console, ไม่ message ผู้เล่น) — โหลด jar ที่ build ใหม่", ex:"/a", tags:["a","reload","dev","plugman"]},
+];
+const CATS = {prank:"ของแกล้ง", help:"ของช่วย", set:"เซ็ตอัพ / ตั้งค่า", dev:"dev"};
+const CATCOLOR = {prank:"แกล้ง",help:"ช่วย",set:"ตั้งค่า",dev:"dev"};
+
+// build keyword pool for autocomplete
+const POOL = [...new Set(CMDS.flatMap(c => [c.cmd.split(" ").slice(0,3).join(" "), ...c.tags]))];
+
+const q = document.getElementById('q'), ac = document.getElementById('ac'),
+  list = document.getElementById('list'), empty = document.getElementById('empty'),
+  chips = document.getElementById('chips'), clr = document.getElementById('clr');
+let activeCat = "", acIndex = -1;
+
+// chips
+chips.innerHTML = '<span class="chip on" data-c="">ทั้งหมด</span>' +
+  Object.entries(CATS).map(([k,v])=>`<span class="chip" data-c="${k}">${v}</span>`).join('');
+chips.onclick = e => { if(!e.target.dataset.c && e.target.dataset.c!=="") return;
+  if(e.target.classList.contains('chip')){ activeCat=e.target.dataset.c;
+    [...chips.children].forEach(c=>c.classList.toggle('on', c===e.target)); render(); } };
+
+function esc(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+function hl(s,term){ if(!term) return esc(s);
+  return esc(s).replace(new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<mark>$1</mark>'); }
+
+function matches(c, term){
+  if(activeCat && c.cat!==activeCat) return false;
+  if(!term) return true;
+  const hay=(c.cmd+' '+c.desc+' '+c.tags.join(' ')).toLowerCase();
+  return term.toLowerCase().split(/\s+/).every(w=>hay.includes(w));
+}
+
+function render(){
+  const term=q.value.trim();
+  clr.style.display = term? 'block':'none';
+  const shown=CMDS.filter(c=>matches(c,term));
+  const groups={};
+  shown.forEach(c=>(groups[c.cat]=groups[c.cat]||[]).push(c));
+  list.innerHTML = Object.keys(CATS).filter(k=>groups[k]).map(k=>
+    `<div class="secttl">${CATS[k]} (${groups[k].length})</div><div class="grid">`+
+    groups[k].map(c=>`<div class="card ${c.cat}">
+      <span class="cat">${CATCOLOR[c.cat]}</span>
+      <div class="cmd">${hl(c.cmd,term)}</div>
+      <div class="desc">${hl(c.desc,term)}</div>
+      <span class="ex">▶ ${esc(c.ex)}</span>
+      <div class="tags">${c.tags.map(t=>`<span class="tg">${hl(t,term)}</span>`).join('')}</div>
+    </div>`).join('')+`</div>`).join('');
+  empty.style.display = shown.length? 'none':'block';
+  document.getElementById('eq').textContent = term;
+}
+
+// autocomplete
+function showAC(){
+  const term=q.value.trim().toLowerCase();
+  if(!term){ ac.style.display='none'; return; }
+  const sug=POOL.filter(k=>k.toLowerCase().includes(term)).slice(0,8);
+  if(!sug.length){ ac.style.display='none'; return; }
+  acIndex=-1;
+  ac.innerHTML=sug.map(k=>{
+    const c=CMDS.find(x=>x.cmd.toLowerCase().startsWith(k.toLowerCase()));
+    const hint=c?c.cmd.split(' ').slice(0,3).join(' '):'keyword';
+    return `<div data-k="${esc(k)}"><span class="k">${hl(k,term)}</span><span class="t">${esc(hint)}</span></div>`;
+  }).join('');
+  ac.style.display='block';
+  [...ac.children].forEach(d=>d.onclick=()=>{ q.value=d.dataset.k; ac.style.display='none'; render(); q.focus(); });
+}
+
+q.addEventListener('input',()=>{ render(); showAC(); });
+q.addEventListener('keydown',e=>{
+  const items=[...ac.children];
+  if(ac.style.display==='block' && items.length){
+    if(e.key==='ArrowDown'){e.preventDefault();acIndex=(acIndex+1)%items.length;}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIndex=(acIndex-1+items.length)%items.length;}
+    else if(e.key==='Enter' && acIndex>=0){e.preventDefault();items[acIndex].click();return;}
+    else if(e.key==='Escape'){ac.style.display='none';return;}
+    else return;
+    items.forEach((d,i)=>d.classList.toggle('sel',i===acIndex));
+  }
+});
+clr.onclick=()=>{ q.value=''; ac.style.display='none'; render(); q.focus(); };
+document.addEventListener('click',e=>{ if(!ac.contains(e.target)&&e.target!==q) ac.style.display='none'; });
+render();
+</script>
+</body>
+</html>
