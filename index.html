@@ -93,10 +93,11 @@ const CMDS = [
   // setup / config
   {cmd:"/avob setup", cat:"set", desc:"สร้างกำแพงกระจก + พื้น ที่ขนาดปัจจุบัน", ex:"/avob setup", tags:["setup","เซ็ต","สร้าง","กำแพง","wall"]},
   {cmd:"/avob reset", cat:"set", desc:"เคลียร์บล็อคที่ต่อ (fill) เริ่มใหม่ — กำแพงคงอยู่. มีเอฟเฟคละลายนอก→ใน + implosion", ex:"/avob reset", tags:["reset","รีเซ็ต","เคลียร์","clear"]},
-  {cmd:"/avob size [9|12|18|26]", cat:"set", desc:"ปรับขนาด footprint (สูง 9 ชั้นเท่าเดิม). ไม่ต้อง reset; ใหญ่→เล็ก ลบส่วนเกิน คืนพื้นเป็นดิน. พิมพ์เฉยๆ = ดูขนาดปัจจุบัน", ex:"/avob size", tags:["size","ขนาด","9","12","18","26"]},
+  {cmd:"/avob size [9|12|18|26] [barrier]", cat:"set", desc:"ปรับขนาด footprint (สูง 9 ชั้นเท่าเดิม). ไม่ต้อง reset; ใหญ่→เล็ก ลบส่วนเกิน คืนพื้นเป็นดิน. พิมพ์เฉยๆ = ดูขนาดปัจจุบัน. ใส่ barrier = แทนกระจกกำแพงด้วยบล็อค BARRIER (ใส/ทุบไม่ได้), ไม่ใส่ = กระจกปกติ. จำค่าใน config", ex:"/avob size 12 barrier", tags:["size","ขนาด","9","12","18","26","barrier","บาเรีย","กำแพง","ใส"]},
   {cmd:"/avob time <วิ>", cat:"set", desc:"ตั้งเวลานับถอยหลัง (default 15). 3 วิท้ายนับช้าลง", ex:"/avob time 20", tags:["time","เวลา","นับ","countdown"]},
   {cmd:"/avob blockbreak <on|off>", cat:"set", desc:"เปิด/ปิด ให้ผู้เล่นทุบบล็อค fill (กำแพงทุบไม่ได้เสมอ). จำค่าใน config. default on", ex:"/avob blockbreak off", tags:["blockbreak","ทุบ","break","กำแพง"]},
   {cmd:"/avob fastplace <on|off>", cat:"set", desc:"เปิด/ปิด วางเร็ว — คลิกขวาในเขตเติมคอลัมน์ทีละ 3 (หยุดที่ตัวผู้เล่น). จำค่าใน config. default on", ex:"/avob fastplace off", tags:["fastplace","วางเร็ว","place","คลิกขวา","column"]},
+  {cmd:"/avob chat <on|off>", cat:"set", desc:"เปิด/ปิด จอ chat (เหนือเขต, หันใต้) + จอ profile (ตะวันตก, หันออก) ผ่าน avo_show_tik. default off. ต้อง restart server จริง (softdepend). จำค่าใน config", ex:"/avob chat on", tags:["chat","จอ","board","profile","tiktok","avo_show_tik"]},
   {cmd:"/avob play <1|2|3>", cat:"set", desc:"เลือกโหมดเล่น — ตอนนี้ทำแค่ 1 (2/3 ทีหลัง)", ex:"/avob play 1", tags:["play","โหมด","mode"]},
   // dev
   {cmd:"/avob test", cat:"dev", desc:"self-test ให้ AI/RCON ตรวจ — build→fill→countdown→ทุก prank/help→Atomic, ลง log", ex:"/avob test", tags:["test","เทส","dev","rcon"]},
